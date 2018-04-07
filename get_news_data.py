@@ -21,53 +21,9 @@ def get_news(search_term):
                                                         CACHE_FNAME, params)
     return searched_news['articles']
 
-def init_db(db_name):
+def insert_article_data(articles, db_name):
 
-    #code to create a new database goes here
-
-    try:
-        conn = sqlite.connect(db_name)
-        cur = conn.cursor()
-
-        statement = '''
-            SELECT name FROM sqlite_master WHERE type='table' AND name='Articles'
-        '''
-        cur.execute(statement)
-
-        table_statement = '''
-            CREATE TABLE 'Articles' (
-                'Title' TEXT NOT NULL,
-                'Description' TEXT NOT NULL
-            );
-        '''
-
-        #code to test whether table already exists goes here
-        #if exists, prompt to user: "Table exists. Delete?yes/no"
-        #if user input is yes, drop table. Else, use move on and use existing table
-        if cur.fetchone():
-            dropq = input("Articles Table already exists. Drop table? yes/no: ")
-            if dropq == 'yes':
-                # Drop tables
-                statement = '''
-                    DROP TABLE IF EXISTS 'Tweets';
-                '''
-                cur.execute(statement)
-                cur.execute(table_statement)
-        else:
-            #code to create table(if not exists) goes here
-            cur.execute(table_statement)
-
-        #close database connection
-        conn.commit()
-        conn.close()
-
-    #handle exception if connection fails by printing the error
-    except:
-        print("Failed to create SQLite database.")
-
-def insert_article_data(articles, DB_NAME):
-
-    conn = sqlite.connect(DB_NAME)
+    conn = sqlite.connect(db_name)
     cur = conn.cursor()
 
     statement = 'INSERT INTO "Articles" '

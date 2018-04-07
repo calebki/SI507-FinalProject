@@ -1,9 +1,7 @@
-import webscraper
+import get_player_data
 import get_news_data
 import os.path
 import sqlite3 as sqlite
-
-DB_NAME = 'test.sqlite'
 
 def init_db(db_name):
     conn = sqlite.connect(db_name)
@@ -29,7 +27,11 @@ def init_db(db_name):
         CREATE TABLE 'Players' (
             'Id' INTEGER PRIMARY KEY AUTOINCREMENT,
             'PlayerName' TEXT NOT NULL,
-            'CurrentTeam' TEXT NOT NULL
+            'Position' TEXT NOT NULL,
+            'CurrentTeam' TEXT NOT NULL,
+            'Height' TEXT NOT NULL,
+            'Experience' INTEGER,
+            'College' TEXT
         );
     '''
     cur.execute(table_statement)
@@ -37,26 +39,28 @@ def init_db(db_name):
     table_statement = '''
         CREATE TABLE 'Seasons' (
             'PlayerId' INTEGER NOT NULL,
-            'age' INTEGER NOT NULL,
-            'gp' INTEGER NOT NULL,
-            'mpg' REAL NOT NULL,
-            'fgm' REAL NOT NULL,
-            'fga' REAL NOT NULL,
-            'fgp' REAL NOT NULL,
-            'tpm' REAL NOT NULL,
-            'tpa' REAL NOT NULL,
-            'tpp' REAL NOT NULL,
-            'ftm' REAL NOT NULL,
-            'fta' REAL NOT NULL,
-            'ftp' REAL NOT NULL,
-            'rpg' REAL NOT NULL,
-            'apg' REAL NOT NULL,
-            'spg' REAL NOT NULL,
-            'bpg' REAL NOT NULL,
-            'topg' REAL NOT NULL,
-            'pfpg' REAL NOT NULL,
-            'ppg' REAL NOT NULL,
-            'url' REAL NOT NULL
+            'Season' TEXT NOT NULL,
+            'Age' INTEGER NOT NULL,
+            'Team' TEXT NOT NULL,
+            'GP' INTEGER NOT NULL,
+            'MPG' REAL NOT NULL,
+            'FG' REAL NOT NULL,
+            'FGA' REAL NOT NULL,
+            'FG%' REAL NOT NULL,
+            '3PM' REAL NOT NULL,
+            '3PA' REAL NOT NULL,
+            '3P%' REAL NOT NULL,
+            'FT' REAL NOT NULL,
+            'FTA' REAL NOT NULL,
+            'FT%' REAL NOT NULL,
+            'TRB' REAL NOT NULL,
+            'AST' REAL NOT NULL,
+            'STL' REAL NOT NULL,
+            'BLK' REAL NOT NULL,
+            'TOV' REAL NOT NULL,
+            'PF' REAL NOT NULL,
+            'PTS' REAL NOT NULL,
+            FOREIGN KEY ('PlayerId') REFERENCES 'Players'('Id')
         );
     '''
     cur.execute(table_statement)
@@ -65,7 +69,8 @@ def init_db(db_name):
         CREATE TABLE 'Articles' (
             'PlayerId' INTEGER NOT NULL,
             'Title' TEXT NOT NULL,
-            'Description' TEXT NOT NULL
+            'Description' TEXT NOT NULL,
+            FOREIGN KEY ('PlayerId') REFERENCES 'Players'('Id')
         );
     '''
     cur.execute(table_statement)
@@ -74,10 +79,14 @@ def init_db(db_name):
     conn.close()
 
 if __name__== "__main__":
+    DB_NAME = 'test.sqlite'
     if os.path.exists(DB_NAME):
         dropq = input("Database already exists. Drop tables? yes/no \n")
-        while dropq != 'yes' and 'no':
+        while dropq != 'yes' and dropq != 'no':
             dropq = input("Please enter yes or no: ")
 
         if dropq == 'yes':
             init_db(DB_NAME)
+
+    team = input("Enter team abbreviation: ")
+    get_player_data.insert_into_tables(team, DB_NAME)

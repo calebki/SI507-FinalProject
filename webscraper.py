@@ -1,8 +1,6 @@
-# Final Project
-# Caleb Ki
-
 from bs4 import BeautifulSoup
 import cache_data
+import sqlite3 as sqlite
 
 CACHE_FNAME = 'nba_cache.json'
 try:
@@ -228,7 +226,6 @@ def make_team_from_scraping(team_abbr):
 
     team = Team(players)
     return team
-
 
 if __name__ == "__main__":
     team1 = make_team_from_scraping("MEM")

@@ -88,5 +88,89 @@ if __name__== "__main__":
         if dropq == 'yes':
             init_db(DB_NAME)
 
-    team = input("Enter team abbreviation: ")
-    get_player_data.insert_into_tables(team, DB_NAME)
+    help_string = '''
+       list <teamabbr>
+            lists roster of an NBA team
+            valid inputs: a three-letter team abbreviation
+       stats <player_name>
+            gives more options to see how to visualize player stats
+       news <player_name>
+            lists headlines of players
+            gives more options to see some basic analysis of the headlines
+       exit
+            exits the program
+       help
+            lists available commands (these instructions)
+    '''
+    user_input = input("Enter command or ('help' for options): ")
+    command_list = user_input.split()
+    command = command_list[0]
+    site_list = []
+    nearby_list = []
+    valid_commands = ['list', 'stats', 'news', 'help', 'exit']
+
+    print("")
+
+    while True:
+        while command not in valid_commands:
+            print("Not a valid command.")
+            user_input = input("Enter valid command or ('help' for options): ")
+            print("")
+            command_list = user_input.split()
+            command = command_list[0]
+
+        if command == 'exit':
+            break
+
+        elif command == 'help':
+            print(help_string)
+            print("")
+
+        elif command == 'list':
+            if len(command_list) < 2:
+                team_abbr = input("Forgot to enter team abbreviation. Enter now: ")
+            else:
+                team_abbr = command_list[1]
+            while team_abbr.upper() not in get_player_data.teams_dict.keys():
+                team_abbr = input("Please enter a valid state abbreviation: ")
+
+            #flask app here
+
+        elif command == 'nearby':
+            if not site_list:
+                print("There is no active results set of sites.")
+            else:
+                if len(command_list) < 2:
+                    index = int(input("Forgot to enter result number. Enter now: "))
+                else:
+                    index = int(command_list[1])
+                while index < 1 or index > len(site_list):
+                    state_abbr = input("Please enter a valid state abbreviation: ")
+
+                site = site_list[index-1]
+                nearby_list = get_nearby_places_for_site(site)
+                print("Places near " + site.name + " " + site.type)
+                for i in range(len(nearby_list)):
+                    print(str(i+1) + " " + nearby_list[i].__str__())
+                print("")
+
+        else:
+            if not site_list and not nearby_list:
+                print("No active results set. Please enter another command.")
+            elif site_list and not nearby_list:
+                plot_sites_for_state(state_abbr, active_list = site_list)
+            else:
+                map_type = input("Enter 1 for plot of National Sites or 2 for plot of places nearby national site: ")
+                if map_type != 1 and map_type != 2:
+                    while map_type != 1 or map_type != 2:
+                        map_type = input("Invalid input. \nEnter 1 for plot of National Sites or 2 for plot of places nearby national site: ")
+                elif map_type == 1:
+                    plot_sites_for_state(site, active_list = site_list)
+                else:
+                    plot_nearby_for_site(site, active_list = nearby_list)
+            print("")
+
+        user_input = input("Enter command or ('help' for options): ")
+        command_list = user_input.split()
+        command = command_list[0]
+        print("")

@@ -13,16 +13,13 @@ try:
 except:
     CACHE_DICTION = {}
 
-def get_news(search_term):
+def insert_article_data(search_term, db_name):
     url = 'https://newsapi.org/v2/everything?'
     params = {'q' : search_term, 'language' : 'en',
               'sortBy' : 'popularity', 'apiKey' : consumer_key}
     searched_news = cache_data.make_request_using_cache(url, CACHE_DICTION,
                                                         CACHE_FNAME, params)
-    return searched_news['articles']
-
-def insert_article_data(articles, db_name):
-
+    articles = searched_news['articles']
     conn = sqlite.connect(db_name)
     cur = conn.cursor()
 

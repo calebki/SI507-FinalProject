@@ -143,7 +143,6 @@ def get_player_info_from_row(rows):
 
         if playerrow is not None:
             s = playerrow.find_all('td')
-
             age = int(s[0].text)
             gp = int(s[4].text)
             mpg = convert_string_to_float(s[6].text)
@@ -229,6 +228,7 @@ def make_team_from_scraping(team_abbr):
 
     team = Team(players)
     return team
+
 
 if __name__ == "__main__":
     team1 = make_team_from_scraping("MEM")

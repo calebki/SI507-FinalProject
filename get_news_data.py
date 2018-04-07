@@ -79,11 +79,3 @@ def insert_article_data(articles, DB_NAME):
     #Close database connection
     conn.commit()
     conn.close()
-
-db_name = 'test.sqlite'
-init_db(db_name)
-
-testquery = 'Damian Lillard'
-testarticles = get_news(testquery)
-
-insert_article_data(testarticles, db_name)

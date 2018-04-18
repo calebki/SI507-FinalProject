@@ -1,0 +1,8 @@
+<!doctype html>
+<title>Roster of {{team_name}}</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"/>
+<div class=page>
+  <h1>{{team_name}}</h1>
+    <h2>Roster</h2>
+    {{ table|safe }}
+</div>

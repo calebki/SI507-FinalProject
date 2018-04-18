@@ -1,0 +1,171 @@
+body            { font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;}
+a, h1, h2       { color: #377ba8; }
+h1, h2          { margin: 0; }
+h1              { border-bottom: 2px solid #eee; }
+h2              { font-size: 1.2em; }
+
+table.dataframe, .dataframe th, .dataframe td {
+  border: none;
+  border-bottom: 1px solid #C8C8C8;
+  border-collapse: collapse;
+  text-align:left;
+  padding: 10px;
+  margin-bottom: 40px;
+  font-size: 0.9em;
+}
+
+.ATL th {
+  background-color: #C8102E;
+  color: #C4D600
+}
+
+.BOS th {
+  background-color: #007A33;
+  color: #BA9653
+}
+
+.BRK th {
+  background-color: #000000;
+  color: #FFFFFF
+}
+
+.CHO th {
+  background-color: #201747;
+  color: #00778B
+}
+
+.CHI th {
+  background-color: #BA0C2F;
+  color: #000000
+}
+
+.CLE th {
+  background-color: #6F263D;
+  color: #FFB81C
+}
+
+.DAL th {
+  background-color: #003DA5;
+  color: #8A8D8F
+}
+
+.DEN th {
+  background-color: #041E42;
+  color: #FFC72C
+}
+
+.DET th {
+  background-color: #D50032;
+  color: #003DA5
+}
+
+.GSW th {
+  background-color: #003DA5;
+  color: #FFC72C
+}
+
+.HOU th {
+  background-color: #CE1141;
+  color: #FDB927
+}
+
+.IND th {
+  background-color: #041E42;
+  color: #FFCD00
+}
+
+.LAC th {
+  background-color: #D50032;
+  color: #003DA5
+}
+
+.LAL th {
+  background-color: #582C83;
+  color: #FFC72C
+}
+
+.MEM th {
+  background-color: #7D9BC1;
+  color: #FFC72C
+}
+
+.MIA th {
+  background-color: #862633;
+  color: #FFA300
+}
+
+.MIL th {
+  background-color: #00471B;
+  color: #EEE1C6
+}
+
+.MIN th {
+  background-color: #002B5C;
+  color: #7AC143
+}
+
+.NOP th {
+  background-color: #0C2340;
+  color: #C8102E
+}
+
+.NYK th {
+  background-color: #003DA5;
+  color: #FF671F
+}
+
+.OKC th {
+  background-color: #0072CE;
+  color: #F9423A
+}
+
+.ORL th {
+  background-color: #0057B8;
+  color: #C2CCD2
+}
+
+.PHI th {
+  background-color: #003DA5;
+  color: #D50032
+}
+
+.PHO th {
+  background-color: #CB6015;
+  color: #201747
+}
+
+.POR th {
+  background-color: #C8102E;
+  color: #C4CED4
+}
+
+.SAC th {
+  background-color: #582C83;
+  color: #63727A
+}
+
+.SAS th {
+  background-color: #C6CFD4;
+  color: #000000
+}
+
+.TOR th {
+  background-color: #BA0C2F;
+  color: #808285
+}
+
+.UTA th {
+  background-color: #0C2340;
+  color: #2C5234
+}
+
+.WAS th {
+  background-color: #0C2340;
+  color: #C8102E
+}
+
+
+tr:nth-child(odd)		{ background-color:#eee; }
+tr:nth-child(even)	{ background-color:#fff; }
+
+tr:hover            { background-color: #ffff99;}

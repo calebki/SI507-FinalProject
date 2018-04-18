@@ -1,0 +1,8 @@
+<!doctype html>
+<title>Stats for {{player_name}}</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}"/>
+<div class=page>
+  <h1>{{player_name}}</h1>
+    <h2>Career Stats</h2>
+    {{ table|safe }}
+</div>

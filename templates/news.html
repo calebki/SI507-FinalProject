@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>News about {{player_name}}</title>
+    {{ js_resources|indent(4)|safe }}
+    {{ css_resources|indent(4)|safe }}
+    {{ plot_script|indent(4)|safe }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='news_style.css') }}"/>
+  </head>
+  <div>
+    <h1>Most recent news concerning {{player_name}}</h1>
+      <ol>
+        {% for n in news_list %}
+          <li>
+            <h3 class="Titles"> {{n['title']}} </h3>
+            <p class="Descriptions"> {{n['description']}} </p>
+          </li>
+        {% endfor %}
+      </ol>
+  </div>
+  <body>
+    {{ plot_div|indent(4)|safe }}
+  </body>
+<br/>
+<br/>
+  <a href='/player/{{pname}}'>
+    Back to the stats page!
+  </a>
+</html>

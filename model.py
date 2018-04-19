@@ -3,6 +3,18 @@ from bs4 import BeautifulSoup
 import cache_data
 import sqlite3 as sqlite
 import pandas as pd
+import matplotlib.pyplot as plt
+import nltk
+from nltk.corpus import stopwords
+from bokeh.models import (HoverTool, FactorRange, Plot,
+                          LinearAxis, Grid, Range1d)
+from bokeh.plotting import figure, show, output_file
+from bokeh.embed import components
+from bokeh.models.sources import ColumnDataSource
+from collections import Counter
+from bokeh.resources import INLINE
+from bokeh.util.string import encode_utf8
+
 
 DB_NAME = 'data.sqlite'
 
@@ -59,6 +71,107 @@ teams_dict = {
     "UTA" :	"Utah Jazz",
     "WAS" :	"Washington Wizards"
 }
+
+feature_names = {
+    "Games Played": "GP",
+    "Assists Per Game": "AST",
+    "Rebounds Per Game": "TRB",
+    "Steals Per Game": "STL",
+    "Blocks Per Game": "BLK",
+    "Turnovers Per Game": "TOV",
+    "Points Per Game" : "PTS"
+}
+
+players = {}
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+news_url = 'https://newsapi.org/v2/everything?'
+
+class Player():
+
+
+    def __init__(self, name):
+        global news_url
+        global DB_NAME
+        self.name = name
+
+        #Pulling news data from Web API
+        params = {'q' : self.name, 'language' : 'en',
+                  'sortBy' : 'popularity', 'apiKey' : consumer_key}
+        searched_news = cache_data.make_request_using_cache(news_url, CACHE_DICTION1,
+                                                            CACHE_FNAME1, params)
+        self.articles = searched_news['articles']
+
+        #Pulling stats from database
+
+        conn = sqlite.connect(DB_NAME)
+        cur = conn.cursor()
+        statement = '''
+            SELECT Id FROM 'Players'
+            WHERE PlayerName = ?
+        '''
+        cur.execute(statement, (self.name, ))
+        id = cur.fetchone()[0]
+
+        statement = '''
+            SELECT * FROM 'Seasons'
+            WHERE PlayerId =
+        '''
+        statement += str(id)
+        df = pd.read_sql_query(statement, conn)
+        conn.close()
+        df.set_index(['Season'], inplace=True)
+        df.drop('PlayerId', axis=1, inplace=True)
+        df.index.name=None
+        self.df = df
+
+    def get_word_plot(self):
+        global stop_words
+        words = []
+        for a in self.articles:
+            words = words + nltk.word_tokenize(a['title']) + \
+                    nltk.word_tokenize(a['description'])
+        words = [word for word in words if len(word) > 2]
+        words = [word for word in words if not word.isnumeric()]
+        words = [word.lower() for word in words]
+        words = [word for word in words if word not in stop_words]
+        counts = nltk.FreqDist(words)
+        counts_series = pd.Series(counts)
+        small_series = counts_series.sort_values(ascending = False).head()
+        indices = list(small_series.index)
+        p = figure(x_range=indices, plot_width = 600, plot_height=600,
+                   title = "Most Frequent Words in News")
+        p.vbar(x=indices, top=list(small_series.values), width=0.9)
+        return p
+
+    def get_stats_plot(self, current_feature_name):
+        feature_abbr = feature_names[current_feature_name]
+        indices = list(self.df.index)
+        values = list(self.df[feature_abbr])
+        i = 0
+        while i  < len(indices) - 1:
+            if indices[i] == indices[i+1]:
+                values.pop(i)
+                indices.pop(i)
+                continue
+            i = i + 1
+
+        p = figure(plot_width=800, plot_height=300, x_range=indices,
+                   title =  current_feature_name + " Over time")
+        p.line(x=indices, y=values)
+        return p
+
+def get_player_stats(name, current_feature_name):
+    global players
+    if name not in players.keys():
+        players[name] = Player(name)
+    return [players[name].df, players[name].get_stats_plot(current_feature_name)]
+
+def get_top_news(name):
+    global players
+    if name not in players.keys():
+        players[name] = Player(name)
+    return [players[name].articles, players[name].get_word_plot()]
 
 def convert_string_to_float(string_to_convert):
     if string_to_convert == "":
@@ -142,27 +255,8 @@ def init_db(db_name):
     conn.commit()
     conn.close()
 
-def insert_article_data(search_term, db_name):
-    url = 'https://newsapi.org/v2/everything?'
-    params = {'q' : search_term, 'language' : 'en',
-              'sortBy' : 'popularity', 'apiKey' : consumer_key}
-    searched_news = cache_data.make_request_using_cache(url, CACHE_DICTION1,
-                                                        CACHE_FNAME1, params)
-    articles = searched_news['articles']
-    conn = sqlite.connect(db_name)
-    cur = conn.cursor()
-
-    statement = 'INSERT INTO "Articles" '
-    statement += 'VALUES (?, ?)'
-    for article in articles:
-        insertion = (article['title'], article['description'])
-        cur.execute(statement, insertion)
-
-    #Close database connection
-    conn.commit()
-    conn.close()
-
-def insert_into_tables(team_abbr, db_name):
+def insert_player_data(team_abbr):
+    global DB_NAME
     base_url = "https://www.basketball-reference.com/"
     end_url = "/2018.html"
     url = base_url + "teams/" + team_abbr + end_url
@@ -174,7 +268,7 @@ def insert_into_tables(team_abbr, db_name):
     table_div = page_soup.find('div', id = "div_roster")
     table_rows = table_div.find('tbody').find_all('tr')
 
-    conn = sqlite.connect(db_name)
+    conn = sqlite.connect(DB_NAME)
     cur = conn.cursor()
 
     statement1 = 'INSERT INTO "Players" '
@@ -293,26 +387,10 @@ def get_roster(team_abbr):
     roster.index.name=None
     return roster
 
-def get_player_stats(player_name):
-    global DB_NAME
-    conn = sqlite.connect(DB_NAME)
-    cur = conn.cursor()
-
-    statement = '''
-        SELECT Id FROM 'Players'
-        WHERE PlayerName = ?
-    '''
-    cur.execute(statement, (player_name, ))
-    id = cur.fetchone()[0]
-
-    statement = '''
-        SELECT * FROM 'Seasons'
-        WHERE PlayerId =
-    '''
-    statement += str(id)
-    df = pd.read_sql_query(statement, conn)
-    conn.close()
-    df.set_index(['Season'], inplace=True)
-    df.drop('PlayerId', axis=1, inplace=True)
-    df.index.name=None
-    return df
+# def create_histogram(df, stat, title = "test", width = 1200,
+#     height = 300):
+#     p = Histogram(df, stat, title = title, bins = 5,
+#                   width = width, height = height)
+#     p.xaxis.axis_label = stat
+#     p.yaxis.axis_label = 'Count'
+#     return p

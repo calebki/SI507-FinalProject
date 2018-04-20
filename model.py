@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import cache_data
 import sqlite3 as sqlite
 import pandas as pd
-import matplotlib.pyplot as plt
 import nltk
 from nltk.corpus import stopwords
 from bokeh.plotting import figure
@@ -363,7 +362,7 @@ def get_roster(team_abbr):
     conn.close()
     roster.drop('Id', axis=1, inplace=True)
     roster['PlayerName'] = roster['PlayerName'].apply(lambda x: "<a href='/player/" \
-                       + ".".join(x.split()) + "' class = 'link'>" + x + "</a>")
+                       + "_".join(x.split()) + "' class = 'link'>" + x + "</a>")
     roster.set_index(['PlayerName'], inplace=True)
     roster.index.name=None
     return roster

@@ -9,7 +9,7 @@ from bokeh.util.string import encode_utf8
 app = Flask(__name__)
 
 def handle_name(pname):
-    names = pname.split(".")
+    names = pname.split("_")
     fullname = names[0]
     for i in range(1,len(names)):
         fullname = fullname + " " + names[i]
@@ -84,6 +84,9 @@ def get_news(pname):
     )
     return encode_utf8(html)
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__== "__main__":
     model.init(app)

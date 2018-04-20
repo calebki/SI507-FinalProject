@@ -1,12 +1,8 @@
-import os.path
 from flask import Flask, render_template, request
 import pandas as pd
 import model
-from bokeh.models import (HoverTool, FactorRange, Plot,
-                          LinearAxis, Grid, Range1d)
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.models.sources import ColumnDataSource
 from bokeh.resources import INLINE
 from bokeh.util.string import encode_utf8
 
@@ -21,7 +17,7 @@ def handle_name(pname):
 
 @app.route('/')
 def main_page():
-    return render_template('home.html')
+    return render_template('home.html', teams_dict = model.teams_dict)
 
 @app.route('/team/<abbr>')
 def show_team(abbr):
@@ -29,21 +25,7 @@ def show_team(abbr):
     team_name = model.teams_dict[abbr]
     roster = model.get_roster(abbr)
     return render_template('roster.html', team_name = team_name,
-        table=roster.to_html(classes=abbr))
-
-# @app.route('/team/<abbr>/stats')
-# def team_chart(abbr):
-#     abbr = abbr.upper()
-#     team_name = model.teams_dict[abbr]
-#     stat = request.args.get("feature_name")
-#     if stat == None:
-#         stat = "Age"
-#
-#     roster = model.get_roster(abbr)
-#     plot = model.create_histogram(roster, stat)
-#     script, div = components(plot)
-#     return render_template('histogram.html', team_name = team_name,
-#         stat = "Age", the_div = div, the_script = script)
+        table=roster.to_html(escape=False, classes=abbr))
 
 @app.route('/player/<pname>')
 def show_player(pname):
@@ -56,6 +38,7 @@ def show_player(pname):
     retlist = model.get_player_stats(fullname, current_feature_name)
     player_stats = retlist[0]
     plot = retlist[1]
+    team = retlist[2]
 
     # grab the static resources
     js_resources = INLINE.render_js()
@@ -72,7 +55,8 @@ def show_player(pname):
         css_resources=css_resources,
         pname = pname,
         feature_names = model.feature_names.keys(),
-        current_feature_name = current_feature_name
+        current_feature_name = current_feature_name,
+        team = team
     )
     return encode_utf8(html)
 
@@ -102,16 +86,5 @@ def get_news(pname):
 
 
 if __name__== "__main__":
-    # dropq = 'yes'
-    # if os.path.exists(DB_NAME):
-    #     dropq = input("Database already exists. Drop tables? yes/no \n")
-    #     while dropq != 'yes' and dropq != 'no':
-    #         dropq = input("Please enter yes or no: ")
-    #
-    # if dropq == 'yes':
-    #     model.init_db(DB_NAME)
-    #     for key in model.teams_dict.keys():
-    #         print("Adding data for " + key)
-    #         model.insert_player_data(key, DB_NAME)
-
+    model.init(app)
     app.run(debug=True)

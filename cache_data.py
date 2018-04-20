@@ -1,10 +1,6 @@
 import requests
 import json
 
-def setup_caching(cache_dict, cache_name):
-    CACHE_DICTION = cache_dict
-    CACHE_FNAME = cache_name
-
 def params_unique_combination(url, params):
     alphabetized_keys = sorted(params.keys())
     res = []

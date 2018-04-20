@@ -1,3 +1,4 @@
+import os.path
 import secrets
 from bs4 import BeautifulSoup
 import cache_data
@@ -6,15 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import nltk
 from nltk.corpus import stopwords
-from bokeh.models import (HoverTool, FactorRange, Plot,
-                          LinearAxis, Grid, Range1d)
-from bokeh.plotting import figure, show, output_file
-from bokeh.embed import components
-from bokeh.models.sources import ColumnDataSource
-from collections import Counter
-from bokeh.resources import INLINE
-from bokeh.util.string import encode_utf8
-
+from bokeh.plotting import figure
 
 DB_NAME = 'data.sqlite'
 
@@ -88,8 +81,6 @@ stop_words = set(stopwords.words('english'))
 news_url = 'https://newsapi.org/v2/everything?'
 
 class Player():
-
-
     def __init__(self, name):
         global news_url
         global DB_NAME
@@ -102,17 +93,21 @@ class Player():
                                                             CACHE_FNAME1, params)
         self.articles = searched_news['articles']
 
-        #Pulling stats from database
+        #Pulling stats and team from database
 
         conn = sqlite.connect(DB_NAME)
         cur = conn.cursor()
         statement = '''
-            SELECT Id FROM 'Players'
+            SELECT Id, CurrentTeam FROM 'Players'
             WHERE PlayerName = ?
         '''
         cur.execute(statement, (self.name, ))
-        id = cur.fetchone()[0]
+        fetched = cur.fetchone()
+        id = fetched[0]
+        # Assigning current team from database
+        self.team = fetched[1]
 
+        # Settings up stats in pandas dataframe
         statement = '''
             SELECT * FROM 'Seasons'
             WHERE PlayerId =
@@ -165,7 +160,7 @@ def get_player_stats(name, current_feature_name):
     global players
     if name not in players.keys():
         players[name] = Player(name)
-    return [players[name].df, players[name].get_stats_plot(current_feature_name)]
+    return [players[name].df, players[name].get_stats_plot(current_feature_name), players[name].team]
 
 def get_top_news(name):
     global players
@@ -179,8 +174,8 @@ def convert_string_to_float(string_to_convert):
     else:
         return float(string_to_convert)
 
-def init_db(db_name):
-    conn = sqlite.connect(db_name)
+def init_db():
+    conn = sqlite.connect(DB_NAME)
     cur = conn.cursor()
 
     statement = '''
@@ -192,12 +187,6 @@ def init_db(db_name):
         DROP TABLE IF EXISTS 'Seasons'
     '''
     cur.execute(statement)
-
-    statement = '''
-        DROP TABLE IF EXISTS 'Articles'
-    '''
-    cur.execute(statement)
-    conn.commit()
 
     table_statement = '''
         CREATE TABLE 'Players' (
@@ -237,16 +226,6 @@ def init_db(db_name):
             'TOV' REAL NOT NULL,
             'PF' REAL NOT NULL,
             'PTS' REAL NOT NULL,
-            FOREIGN KEY ('PlayerId') REFERENCES 'Players'('Id')
-        );
-    '''
-    cur.execute(table_statement)
-
-    table_statement = '''
-        CREATE TABLE 'Articles' (
-            'PlayerId' INTEGER NOT NULL,
-            'Title' TEXT NOT NULL,
-            'Description' TEXT NOT NULL,
             FOREIGN KEY ('PlayerId') REFERENCES 'Players'('Id')
         );
     '''
@@ -383,14 +362,21 @@ def get_roster(team_abbr):
     roster = pd.read_sql_query(statement, conn)
     conn.close()
     roster.drop('Id', axis=1, inplace=True)
+    roster['PlayerName'] = roster['PlayerName'].apply(lambda x: "<a href='/player/" \
+                       + ".".join(x.split()) + "' class = 'link'>" + x + "</a>")
     roster.set_index(['PlayerName'], inplace=True)
     roster.index.name=None
     return roster
 
-# def create_histogram(df, stat, title = "test", width = 1200,
-#     height = 300):
-#     p = Histogram(df, stat, title = title, bins = 5,
-#                   width = width, height = height)
-#     p.xaxis.axis_label = stat
-#     p.yaxis.axis_label = 'Count'
-#     return p
+def init(app):
+    dropq = 'yes'
+    if os.path.exists(DB_NAME):
+        dropq = input("Database already exists. Drop tables? yes/no \n")
+        while dropq != 'yes' and dropq != 'no':
+            dropq = input("Please enter yes or no: ")
+
+    if dropq == 'yes':
+        init_db()
+        for key in teams_dict.keys():
+            print("Adding data for " + key)
+            insert_player_data(key)
